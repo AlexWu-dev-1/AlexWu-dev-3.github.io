@@ -2,9 +2,9 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const { Signer } = require('@volcengine/openapi');
+const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // 火山引擎配置
 const VOLC_CONFIG = {
@@ -19,7 +19,9 @@ const VOLC_CONFIG = {
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(__dirname));
+
+// 静态文件服务 - 明确当前目录
+app.use(express.static(path.resolve(__dirname)));
 
 // 模拟数据
 function mockOCRResult() {
@@ -42,6 +44,11 @@ function mockElementResult() {
         { type: 'button', x: 50, y: 300, width: 150, height: 50 }
     ];
 }
+
+// 首页路由 - 明确返回 index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'index.html'));
+});
 
 // OCR 接口
 app.post('/api/ocr', async (req, res) => {
@@ -110,6 +117,7 @@ app.post('/api/element-detection', async (req, res) => {
 
 // 本地启动服务器
 if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
         console.log('\n=====================================');
         console.log('🚀 后端代理服务器已启动');
@@ -120,4 +128,5 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
+// Vercel 导出
 module.exports = app;
